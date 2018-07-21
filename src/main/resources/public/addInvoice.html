@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Invoice</title>
+</head>
+<body>
+    <br>
+    <h3>Agregar Factura/Nota</h3>
+    <br>
+    <form ng-submit="submitCompra(compra)" novalidate>
+        <div class="form-group">
+            <code>{{invoiceModeValue}}</code>
+            <label for="exampleFormControlSelect1">Documento:</label>
+            <select class="form-control" id="exampleFormControlSelect1" ng-model="invoiceModeValue">
+                <option value="nota" >Nota</option>
+                <option value="factura">Factura</option>
+            </select>
+        </div>
+        <div class="form-group" ng-show="invoiceModeValue=='nota'">
+            <!--<label for="nota">Nota:</label>-->
+            <input type="file" data-fileUpload multiple ><!--accept="image/jpeg" id="nota"  ng-model="compra.nota required"-->
+        </div>
+        <div class="form-group" ng-show="invoiceModeValue=='factura'">
+            <label for="pdf">PDF:</label>
+            <input type="file" accept="application/pdf" id="pdf" ng-model="compra.pdf" required>
+        </div>
+        <div class="form-group" ng-show="invoiceModeValue=='factura'">
+            <label for="xml">XML:</label>
+            <input type="file" accept=".xml" id="xml" ng-model="compra.xml" required>
+        </div>
+
+
+        <div class="form-group">
+            <label for="precio">Precio:</label>
+            <input type="number" min="0" ng-model="compra.precio" id="precio" required>
+        </div>
+
+        <input type="submit" value="Agregar" />
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es" > <!--ng-app="planetaConciencia" -->
+<head>
+    <meta charset="UTF-8">
+    <title>Planeta Conciencia</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>-->
+    <!--<script src="/js/app/app.js"></script>-->
+    <!--<script src="/js/app/invoicesController.js"></script>-->
+    <!--<script src="/js/app/invoicesService.js"></script>-->
+
+</head>
+<body>
+<div class="container"  >
+    <div class="row" > <!--ng-controller="planetaConcienciaController" -->
+        <div class="col-5" id="vm">
+            <br>
+            <ul class="nav nav-tabs">
+                <li class="nav-item active">
+                    <a data-toggle="tab" href="#addInvoice" class="nav-link active" >Agregar Factura/Nota</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#reviewInvoices" @click.prevent="loadInvoices()">Revisar Facturas</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="addInvoice" class="tab-pane fade in active show">
+                    <br>
+                    <!--<div v-html="addInvoice.html"></div>&lt;!&ndash;<ng-include src="'addInvoice.html'"/>what&ndash;&gt;-->
+                    <br>
+                    <h3>Agregar Factura/Nota</h3>
+                    <br>
+
+                    <form @submit.prevent="submitCompra($event.target)" id="factura" enctype="multipart/form-data" novalidate> <!-- modelAttribute="factura"  -->
+
+                        <div class="form-group">
+                            <label for="exampleFormControlSelect1">Documento:</label>
+                            <select class="form-control" id="exampleFormControlSelect1" v-model="invoiceModeValue">
+                                <option value="NOTA" >Nota</option>
+                                <option value="FACTURA">Factura</option>
+                            </select>
+                        </div>
+                        <br>
+                        <hr/>
+                        <br>
+                        <div class="form-group" v-if="invoiceModeValue=='NOTA'">
+                            <label for="nota">Nota:</label>
+                            <input type="file" @change="addNotaImage($event.target.files)"
+                                   id="nota" accept="image/*" class="input-file" required>
+                        </div>
+                        <div v-else>
+                            <div class="form-group" >
+                                <label for="pdf">PDF:</label>
+                                <input type="file" accept="application/pdf" id="pdf" @change="addPDF($event.target.files)" required>
+                            </div>
+                            <div class="form-group" >
+                                <label for="xml">XML:</label>
+                                <input type="file" accept=".xml" id="xml" @change="addXML($event.target.files)" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="price">Total:</label>
+                            <money v-model="price" id="price" v-bind="money" required></money>
+                            <!--<input type="number" min="0" v-model.number="price | currency" id="price" required>-->
+                        </div>
+                        <code></code>
+                        <button type="submit" class="btn btn-sm btn-primary btn-block">Agregar</button>
+                    </form>
+                </div>
+                <div id="reviewInvoices" class="tab-pane fade">
+                    <!--<div v-html="invoices.html"></div>&lt;!&ndash;<ng-include src="'invoices.html'" />2&ndash;&gt;-->
+                    <hr>
+                    <br>
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <th>Id</th>
+                            <th>Usuario</th>
+                            <th>PDF</th>
+                            <th>XML</th>
+                            <th>Nota</th>
+                            <th>Fecha</th>
+                            <th>Precio</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="fact of invoices">
+                                <td>{{fact.id}}</td>
+                                <td>{{fact.user}}</td>
+                                <td>{{fact.pdfPath}}</td>
+                                <td>{{fact.xmlPath}}</td>
+                                <td>{{fact.imagePath}}</td>
+                                <td>{{fact.date }}</td> <!-- | formatDate 'DD-MM-YY' -->
+                                <td>{{fact.price }}</td> <!-- | currency -->
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!--<div >-->
+                        <!--[ { "id": 1, "user": null, "pdfPath": "cfdi.pdf", "xmlPath": "cfdi.xml", "imagePath": null, "date": "2018-06-03T19:24:39.926+0000", "price": 1234 } ]-->
+                        <!--{{invoice}}-->
+                    <!--</div>-->
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://unpkg.com/vue"></script>
+    <script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script type="text/javascript" >
+
+(function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports.VMoney=t():e.VMoney=t()})(this,function(){return function(e){function t(r){if(n[r])return n[r].exports;var i=n[r]={i:r,l:!1,exports:{}};return e[r].call(i.exports,i,i.exports,t),i.l=!0,i.exports}var n={};return t.m=e,t.c=n,t.i=function(e){return e},t.d=function(e,n,r){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:r})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},t.p=".",t(t.s=9)}([function(e,t,n){"use strict";t.a={prefix:"",suffix:"",thousands:",",decimal:".",precision:2}},function(e,t,n){"use strict";var r=n(2),i=n(5),u=n(0);t.a=function(e,t){if(t.value){var o=n.i(i.a)(u.a,t.value);if("INPUT"!==e.tagName.toLocaleUpperCase()){var a=e.getElementsByTagName("input");1!==a.length||(e=a[0])}e.oninput=function(){var t=e.value.length-e.selectionEnd;e.value=n.i(r.a)(e.value,o),t=Math.max(t,o.suffix.length),t=e.value.length-t,t=Math.max(t,o.prefix.length+1),n.i(r.b)(e,t),e.dispatchEvent(n.i(r.c)("change"))},e.onfocus=function(){n.i(r.b)(e,e.value.length-o.suffix.length)},e.oninput(),e.dispatchEvent(n.i(r.c)("input"))}}},function(e,t,n){"use strict";function r(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:m.a;"number"==typeof e&&(e=e.toFixed(o(t.precision)));var n=e.indexOf("-")>=0?"-":"",r=u(e),i=c(r,t.precision),a=d(i).split("."),p=a[0],l=a[1];return p=f(p,t.thousands),t.prefix+n+s(p,l,t.decimal)+t.suffix}function i(e,t){var n=e.indexOf("-")>=0?-1:1,r=u(e),i=c(r,t);return parseFloat(i)*n}function u(e){return d(e).replace(/\D+/g,"")||"0"}function o(e){return a(0,e,20)}function a(e,t,n){return Math.max(e,Math.min(t,n))}function c(e,t){var n=Math.pow(10,t);return(parseFloat(e)/n).toFixed(o(t))}function f(e,t){return e.replace(/(\d)(?=(?:\d{3})+\b)/gm,"$1"+t)}function s(e,t,n){return t?e+n+t:e}function d(e){return e?e.toString():""}function p(e,t){var n=function(){e.setSelectionRange(t,t)};e===document.activeElement&&(n(),setTimeout(n,1))}function l(e){var t=document.createEvent("Event");return t.initEvent(e,!0,!0),t}var m=n(0);n.d(t,"a",function(){return r}),n.d(t,"d",function(){return i}),n.d(t,"b",function(){return p}),n.d(t,"c",function(){return l})},function(e,t,n){"use strict";function r(e,t){t&&Object.keys(t).map(function(e){a.a[e]=t[e]}),e.directive("money",o.a),e.component("money",u.a)}Object.defineProperty(t,"__esModule",{value:!0});var i=n(6),u=n.n(i),o=n(1),a=n(0);n.d(t,"Money",function(){return u.a}),n.d(t,"VMoney",function(){return o.a}),n.d(t,"options",function(){return a.a}),n.d(t,"VERSION",function(){return c});var c="0.8.1";t.default=r,"undefined"!=typeof window&&window.Vue&&window.Vue.use(r)},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var r=n(1),i=n(0),u=n(2);t.default={name:"Money",props:{value:{required:!0,type:[Number,String],default:0},masked:{type:Boolean,default:!1},precision:{type:Number,default:function(){return i.a.precision}},decimal:{type:String,default:function(){return i.a.decimal}},thousands:{type:String,default:function(){return i.a.thousands}},prefix:{type:String,default:function(){return i.a.prefix}},suffix:{type:String,default:function(){return i.a.suffix}}},directives:{money:r.a},data:function(){return{formattedValue:""}},watch:{value:{immediate:!0,handler:function(e,t){var r=n.i(u.a)(e,this.$props);r!==this.formattedValue&&(this.formattedValue=r)}}},methods:{change:function(e){this.$emit("input",this.masked?e.target.value:n.i(u.d)(e.target.value,this.precision))}}}},function(e,t,n){"use strict";t.a=function(e,t){return e=e||{},t=t||{},Object.keys(e).concat(Object.keys(t)).reduce(function(n,r){return n[r]=void 0===t[r]?e[r]:t[r],n},{})}},function(e,t,n){var r=n(7)(n(4),n(8),null,null);e.exports=r.exports},function(e,t){e.exports=function(e,t,n,r){var i,u=e=e||{},o=typeof e.default;"object"!==o&&"function"!==o||(i=e,u=e.default);var a="function"==typeof u?u.options:u;if(t&&(a.render=t.render,a.staticRenderFns=t.staticRenderFns),n&&(a._scopeId=n),r){var c=a.computed||(a.computed={});Object.keys(r).forEach(function(e){var t=r[e];c[e]=function(){return t}})}return{esModule:i,exports:u,options:a}}},function(e,t){e.exports={render:function(){var e=this,t=e.$createElement;return(e._self._c||t)("input",{directives:[{name:"money",rawName:"v-money",value:{precision:e.precision,decimal:e.decimal,thousands:e.thousands,prefix:e.prefix,suffix:e.suffix},expression:"{precision, decimal, thousands, prefix, suffix}"}],staticClass:"v-money",attrs:{type:"tel"},domProps:{value:e.formattedValue},on:{change:e.change}})},staticRenderFns:[]}},function(e,t,n){e.exports=n(3)}])});
+
+Vue.filter('currency', {
+  read: function (value) {
+    return '$' + value.toFixed(2)
+  },
+  write: function (value) {
+    var number = +value.replace(/[^\d.]/g, '')
+    return isNaN(number) ? 0 : number
+  }
+})
+
+    var vm = new Vue({
+        el: '#vm',
+        data: {
+            uploadFieldName: '',
+            appName: 'planeta conciencia',
+            invoiceModeValue : 'NOTA',
+            addInvoice: 'addInvoice.html',
+
+            pdfPath: '',
+            xmlPath: '',
+            imagePath: '',
+            price: '',
+            money: {
+              decimal: '.',
+              thousands: ',',
+              prefix: '$ ',
+              suffix: '',
+              precision: 2,
+              masked: false
+            },
+
+            invoices: {}
+        },
+        methods: {
+            addNotaImage: function(fileList){
+
+                if (!fileList.length) return;
+
+                vm.imagePath = fileList[0];
+            },
+            addPDF: function(fileList){
+
+                if (!fileList.length) return;
+
+                vm.pdfPath = fileList[0];
+            },
+            addXML: function(fileList){
+
+                if (!fileList.length) return;
+
+                vm.xmlPath = fileList[0];
+            },
+
+            submitCompra: function(formSource){
+                const data = new FormData(this);
+
+                if (vm.invoiceModeValue == 'NOTA'){
+                    data.append('imagePath', vm.imagePath);
+                } else {
+                    data.append('xmlPath', vm.xmlPath);
+                    data.append('pdfPath', vm.pdfPath);
+                }
+
+                data.append('price', vm.price);
+                data.append('invMode', vm.invoiceModeValue);
+
+                axios.post('/api/factura',
+                    data,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        timeout: 10000
+                    }
+                ).then(function(){
+                    alert("Alta exitosa!");
+                    formSource.reset();
+                  console.log('SUCCESS!!');
+                })
+                .catch(function(e){
+                    alert("Ocurrió un error, la factura y/o nota ya está dada de alta?");
+                  console.log('FAILURE!!');
+                });
+
+            },
+
+            loadInvoices: function(){
+                axios.get('/api/facturas'
+                ).then(function(data){
+                    vm.invoices = data.data;
+                    console.log('SUCCESS!!');
+                })
+                .catch(function(e){
+                    alert("Ocurrió un error obteniendo las facturas" + e);
+                    console.log('FAILURE!!');
+                });
+            }
+        }
+    });
+
+    Vue.config.devtools = true
+
+    </script>
+</body>
+</html>
