@@ -2,16 +2,16 @@ package com.planeta.conciencia.contabilidad.service;
 
 import com.planeta.conciencia.contabilidad.dto.FacturaRequestDTO;
 import com.planeta.conciencia.contabilidad.entity.Factura;
+import com.planeta.conciencia.contabilidad.exception.InvalidDateRangeFacturas;
 import com.planeta.conciencia.contabilidad.repository.FacturaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.GregorianCalendar;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -23,8 +23,14 @@ public class FacturaService {
     @Autowired
     private Files files;
 
-    public List<Factura> getFacturas(){
-        return facturaRepository.findAll();
+    public List<Factura> getFacturas(final int month, final int year) throws InvalidDateRangeFacturas {
+
+        LocalDate ldStart = LocalDate.of(year,month,01);
+        LocalDate ldEnd = LocalDate.of(year, month, ldStart.lengthOfMonth());
+
+        return facturaRepository.getFacturasFrom(ldStart.atStartOfDay(ZoneId.systemDefault()),
+                ldEnd.atStartOfDay(ZoneId.systemDefault())).orElseThrow(
+                        () -> new InvalidDateRangeFacturas("No hay facturas con la fecha seleccionada"));
     }
 
     public String getPDFFile(Integer id){
@@ -65,7 +71,7 @@ public class FacturaService {
         }
 
         factura.setPrice(facturaRequest.getPrice());
-        factura.setDate(new GregorianCalendar().getTime());
+        factura.setCreated(ZonedDateTime.now());
         return facturaRepository.save(factura);
     }
 }

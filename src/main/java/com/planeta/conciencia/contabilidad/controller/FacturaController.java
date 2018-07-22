@@ -2,6 +2,7 @@ package com.planeta.conciencia.contabilidad.controller;
 
 import com.planeta.conciencia.contabilidad.dto.FacturaRequestDTO;
 import com.planeta.conciencia.contabilidad.entity.Factura;
+import com.planeta.conciencia.contabilidad.exception.InvalidDateRangeFacturas;
 import com.planeta.conciencia.contabilidad.service.FacturaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,11 @@ public class FacturaController {
     @Autowired
     private FacturaService facturaService;
 
-    public static final Logger logger = LoggerFactory.getLogger(FacturaController.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(FacturaController.class);
 
     @PostMapping(path ="/factura")
     public ResponseEntity<?> insertNota(@ModelAttribute FacturaRequestDTO files){
-        logger.info("inserting invoice: " + files);
+        LOGGER.info("inserting invoice: " + files);
         try{
             return new ResponseEntity<>(facturaService.saveInvoice(files), HttpStatus.OK);
         } catch(Exception ex){
@@ -38,23 +39,24 @@ public class FacturaController {
 
     @GetMapping(path = "/getPDFFile")
     public void getPDF(@RequestParam(value = "id") Integer id){
-        logger.info("Getting PDF of invoice: " + id);
+        LOGGER.info("Getting PDF of invoice: " + id);
         facturaService.getPDFFile(id);
     }
 
     @GetMapping(path = "/facturas", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<Factura>> getFacturas(){
+    public ResponseEntity<?> getFacturas(@RequestParam int month, @RequestParam int year){
 
-        logger.info("Getting all invoices");
+        LOGGER.info("Getting all invoices of period: " + month + " of " + year);
 
-        List<Factura> facturas = facturaService.getFacturas();
-
-        logger.info("Got " + facturas.size() + " invoices");
-
-        if (facturas != null){
+        List<Factura> facturas = null;
+        try {
+            facturas = facturaService.getFacturas(month, year);
+            LOGGER.info("Got " + facturas.size() + " invoices");
             return new ResponseEntity<>(facturas, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (InvalidDateRangeFacturas invalidDateRangeFacturas) {
+            String erroMessages = "No hay facturas con la fecha seleccionada.";
+            LOGGER.error(erroMessages);
+            return new ResponseEntity<>(erroMessages, HttpStatus.BAD_REQUEST);
         }
     }
 }

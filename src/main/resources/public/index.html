@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" > <!--ng-app="planetaConciencia" -->
+<html lang="es" >
 <head>
     <meta charset="UTF-8">
     <title>Planeta Conciencia</title>
@@ -7,35 +7,29 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>-->
-    <!--<script src="/js/app/app.js"></script>-->
-    <!--<script src="/js/app/invoicesController.js"></script>-->
-    <!--<script src="/js/app/invoicesService.js"></script>-->
-
 </head>
 <body>
-<div class="container"  >
-    <div class="row" > <!--ng-controller="planetaConcienciaController" -->
-        <div class="col-5" id="vm">
+<div class="container">
+    <div class="row" id="vm">
+        <div class="col-8" >
             <br>
             <ul class="nav nav-tabs">
                 <li class="nav-item active">
                     <a data-toggle="tab" href="#addInvoice" class="nav-link active" >Agregar Factura/Nota</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#reviewInvoices" @click.prevent="loadInvoices()">Revisar Facturas</a>
+                    <a class="nav-link" data-toggle="tab" href="#reviewInvoices" @click.prevent="startInvoices">Revisar Facturas</a>
                 </li>
             </ul>
 
             <div class="tab-content">
                 <div id="addInvoice" class="tab-pane fade in active show">
                     <br>
-                    <!--<div v-html="addInvoice.html"></div>&lt;!&ndash;<ng-include src="'addInvoice.html'"/>what&ndash;&gt;-->
                     <br>
                     <h3>Agregar Factura/Nota</h3>
                     <br>
 
-                    <form @submit.prevent="submitCompra($event.target)" id="factura" enctype="multipart/form-data" novalidate> <!-- modelAttribute="factura"  -->
+                    <form @submit.prevent="submitCompra($event.target)" id="factura" enctype="multipart/form-data" novalidate>
 
                         <div class="form-group">
                             <label for="exampleFormControlSelect1">Documento:</label>
@@ -44,7 +38,6 @@
                                 <option value="FACTURA">Factura</option>
                             </select>
                         </div>
-                        <br>
                         <hr/>
                         <br>
                         <div class="form-group" v-if="invoiceModeValue=='NOTA'">
@@ -73,8 +66,31 @@
                     </form>
                 </div>
                 <div id="reviewInvoices" class="tab-pane fade">
-                    <!--<div v-html="invoices.html"></div>&lt;!&ndash;<ng-include src="'invoices.html'" />2&ndash;&gt;-->
                     <hr>
+                    <br>
+                    <div>
+                        <label for="meses">Mes:</label>
+                        <select id="meses" v-model="month" @change.prevent="changeMonth($event)">
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <label for="years">Año:</label>
+                        <select id="years" v-model="year" @change.prevent="changeYear($event)">
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                        </select>
+                    </div>
                     <br>
                     <table class="table table-striped table-hover">
                         <thead class="thead-dark">
@@ -87,7 +103,7 @@
                             <th>Precio</th>
                         </thead>
                         <tbody>
-                            <tr v-for="fact of invoices">
+                            <tr  v-for="fact of invoices">
                                 <td>{{fact.id}}</td>
                                 <td>{{fact.user}}</td>
                                 <td>{{fact.pdfPath}}</td>
@@ -96,14 +112,16 @@
                                 <td>{{fact.date }}</td> <!-- | formatDate 'DD-MM-YY' -->
                                 <td>{{fact.price }}</td> <!-- | currency -->
                             </tr>
+                            <tr v-if="invoices.length == undefined || invoices.length == 0">
+                                <td colspan="7">No se encontraron facturas/notas para el periodo</td>
+                            </tr>
                         </tbody>
+                        <tfoot v-if="invoices.length > 0">
+                            <tr>
+                                <td colspan="7" >Total del periodo: ${{total}}</td>
+                            </tr>
+                        </tfoot>
                     </table>
-
-                    <!--<div >-->
-                        <!--[ { "id": 1, "user": null, "pdfPath": "cfdi.pdf", "xmlPath": "cfdi.xml", "imagePath": null, "date": "2018-06-03T19:24:39.926+0000", "price": 1234 } ]-->
-                        <!--{{invoice}}-->
-                    <!--</div>-->
-
                 </div>
             </div>
 
@@ -153,7 +171,10 @@ Vue.filter('currency', {
               masked: false
             },
 
-            invoices: {}
+            invoices: {},
+            total: '',
+            month: '',
+            year: ''
         },
         methods: {
             addNotaImage: function(fileList){
@@ -209,15 +230,37 @@ Vue.filter('currency', {
             },
 
             loadInvoices: function(){
-                axios.get('/api/facturas'
+
+                axios.get('/api/facturas?month=' + vm.month + '&year=' + vm.year
                 ).then(function(data){
                     vm.invoices = data.data;
+
+                    vm.invoices.forEach(invoice => {
+                      vm.total += invoice.price;
+                    });
                     console.log('SUCCESS!!');
                 })
                 .catch(function(e){
-                    alert("Ocurrió un error obteniendo las facturas" + e);
-                    console.log('FAILURE!!');
+                    vm.invoices = {};
+                    alert("Ocurrió un error obteniendo las facturas. \n" + e.response.data);
+                    console.log('FAILURE!!', e);
                 });
+            },
+
+            changeMonth: function(event){
+                vm.month = event.currentTarget.value;
+                vm.loadInvoices();
+            },
+            changeYear: function(event){
+                vm.year = event.currentTarget.value;
+                vm.loadInvoices();
+            },
+
+            startInvoices(){
+                var d = new Date();
+                vm.month = d.getMonth() +  1;
+                vm.year = d.getFullYear();
+                vm.loadInvoices();
             }
         }
     });
